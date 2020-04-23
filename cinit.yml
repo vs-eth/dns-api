@@ -44,8 +44,8 @@ programs:
 
       # The else branch is just a dummy to pass a valid flag to java
       - DEBUG_FLAG: |
-          {% if INTERNAL_DEBUG == 'true' %}
+          {%- if INTERNAL_DEBUG == 'true' -%}
           -agentlib:jdwp=transport=dt_socket,server=y,suspend={{ INTERNAL_DEBUG_SUSPEND }},address=*:5005
-          {% else %}
+          {%- else -%}
           -Dx=x
-          {% endif %}
+          {%- endif -%}
