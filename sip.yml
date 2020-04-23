@@ -1,0 +1,6 @@
+---
+ingress:
+  - name: default
+    subdomain: dns
+    grpc:
+      - port: 50051

@@ -1,0 +1,38 @@
+programs:
+  - name: setup
+    path: sed
+    args:
+      - -e
+      - "s/CUSTOM_NETCENTER_USERNAME/{{ CUSTOM_NETCENTER_USERNAME }}/g"
+      - "s/CUSTOM_NETCENTER_PASSWORD/{{ CUSTOM_NETCENTER_PASSWORD }}/g"
+      - "s/CUSTOM_NETCENTER_ISG_GROUP/{{ CUSTOM_NETCENTER_ISG_GROUP }}/g"
+      - -i
+      - /app/dns-api.properties
+    before:
+      - dns-api
+    env:
+      - CUSTOM_NETCENTER_USERNAME:
+      - CUSTOM_NETCENTER_PASSWORD:
+      - CUSTOM_NETCENTER_ISG_GROUP:
+
+
+  - name: dns-api
+    path: java
+    args:
+      - "{{ DEBUG_FLAG }}"
+      - -Dch.ethz.vis.dnsapi.config=/app/dns-api.properties
+      - -jar
+      - /app/dns-api.jar
+    env:
+      - DEBUG:
+      - DEBUG_SUSPEND:
+      - INTERNAL_DEBUG: "{{ DEBUG | default(value='false') }}"
+      - INTERNAL_DEBUG_SUSPEND: "{{ DEBUG_SUSPEND | default(value='n') }}"
+
+      # The else branch is just a dummy to pass a valid flag to java
+      - DEBUG_FLAG: |
+          {% if INTERNAL_DEBUG == 'true' %}
+          -agentlib:jdwp=transport=dt_socket,server=y,suspend={{ INTERNAL_DEBUG_SUSPEND }},address=*:5005
+          {% else %}
+          -Dx=x
+          {% endif %}
