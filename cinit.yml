@@ -11,9 +11,9 @@ programs:
       - -e
       - "s/SIP_AUTH_DNS_API_CLIENT_ID/{{ SIP_AUTH_DNS_API_CLIENT_ID }}/g"
       - -e
-      - "s/SIP_AUTH_OIDC_ISSUER/{{ SIP_AUTH_OIDC_ISSUER }}/g"
+      - "s$SIP_AUTH_OIDC_ISSUER${{ SIP_AUTH_OIDC_ISSUER }}$g"
       - -e
-      - "s/SIP_AUTH_OIDC_JWKS_URL/{{ SIP_AUTH_OIDC_JWKS_URL }}/g"
+      - "s$SIP_AUTH_OIDC_JWKS_URL${{ SIP_AUTH_OIDC_JWKS_URL }}$g"
       - -e
       - "s/CUSTOM_DNS_ZONES/{{ CUSTOM_DNS_ZONES }}/g"
       - -i
