@@ -4,6 +4,10 @@ ingress:
     subdomain: dns
     grpc:
       - port: 50051
+  - name: grpc-web
+    subdomain: dns-web
+    grpc-web:
+      - port: 50051
 env:
   - name: SIP_AUTH_DNS_API_CLIENT_ID
     secret:
