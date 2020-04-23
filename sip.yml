@@ -19,17 +19,17 @@ env:
       create: provided
   - name: CUSTOM_NETCENTER_USERNAME
     secret:
-      key: sip-auth-oidc-jwks-url
+      key: custom-netcenter-username
       create: provided
   - name: CUSTOM_NETCENTER_PASSWORD
     secret:
-      key: sip-auth-oidc-jwks-url
+      key: custom-netcenter-password
       create: provided
   - name: CUSTOM_NETCENTER_ISG_GROUP
     secret:
-      key: sip-auth-oidc-jwks-url
+      key: custom-netcenter-isg-group
       create: provided
   - name: CUSTOM_DNS_ZONES
     secret:
-      key: sip-auth-oidc-jwks-url
+      key: custom-dns-zones
       create: provided
