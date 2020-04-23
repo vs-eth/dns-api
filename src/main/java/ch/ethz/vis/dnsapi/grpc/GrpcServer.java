@@ -7,7 +7,6 @@ import io.grpc.protobuf.services.ProtoReflectionService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -15,27 +14,23 @@ public class GrpcServer {
 
     private static final Logger LOG = LogManager.getLogger(GrpcServer.class);
 
-    private NetcenterAPI netcenterAPI;
+    private final NetcenterAPI netcenterAPI;
 
     private Server server;
 
-    private int port;
+    private final int port;
 
-    private String defaultIsg;
+    private final String defaultIsg;
 
-    private String certFilePath;
-
-    private String keyFilePath;
+    private final AuthConfigStrategy authConfigStrategy;
 
     public GrpcServer(NetcenterAPI netcenterAPI,
                       String defaultIsg,
-                      String certFilePath,
-                      String keyFilePath) {
+                      AuthConfigStrategy authConfigStrategy) {
         this.netcenterAPI = netcenterAPI;
-        this.certFilePath = certFilePath;
-        this.keyFilePath = keyFilePath;
         this.port = 50051;
         this.defaultIsg = defaultIsg;
+        this.authConfigStrategy = authConfigStrategy;
     }
 
     public void serve(List<String> dnsZones) throws IOException {
@@ -45,11 +40,12 @@ public class GrpcServer {
     }
 
     private Server instantiateServer(List<String> dnsZones) {
-        return NettyServerBuilder.forPort(port)
-                .useTransportSecurity(new File(certFilePath), new File(keyFilePath))
+        NettyServerBuilder builder = NettyServerBuilder.forPort(port)
                 .addService(new DnsImpl(netcenterAPI, defaultIsg, dnsZones))
-                .addService(ProtoReflectionService.newInstance())
-                .build();
+                .addService(ProtoReflectionService.newInstance());
+
+        authConfigStrategy.configure(builder);
+        return builder.build();
     }
 
     private void joinServer() {

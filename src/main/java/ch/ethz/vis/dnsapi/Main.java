@@ -49,8 +49,7 @@ public class Main {
 
         return new GrpcServer(netcenterAPI,
                 config.getIsgGroup(),
-                config.getCertFilePath(),
-                config.getKeyFilePath());
+                config.getAuthConfig());
     }
 
     private static Config loadProperties(InputStream is) throws IOException, InitializationException {

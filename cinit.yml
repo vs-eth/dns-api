@@ -4,8 +4,18 @@ programs:
     args:
       - -e
       - "s/CUSTOM_NETCENTER_USERNAME/{{ CUSTOM_NETCENTER_USERNAME }}/g"
+      - -e
       - "s/CUSTOM_NETCENTER_PASSWORD/{{ CUSTOM_NETCENTER_PASSWORD }}/g"
+      - -e
       - "s/CUSTOM_NETCENTER_ISG_GROUP/{{ CUSTOM_NETCENTER_ISG_GROUP }}/g"
+      - -e
+      - "s/SIP_AUTH_DNS_API_CLIENT_ID/{{ SIP_AUTH_DNS_API_CLIENT_ID }}/g"
+      - -e
+      - "s/SIP_AUTH_OIDC_ISSUER/{{ SIP_AUTH_OIDC_ISSUER }}/g"
+      - -e
+      - "s/SIP_AUTH_OIDC_JWKS_URL/{{ SIP_AUTH_OIDC_JWKS_URL }}/g"
+      - -e
+      - "s/CUSTOM_DNS_ZONES/{{ CUSTOM_DNS_ZONES }}/g"
       - -i
       - /app/dns-api.properties
     before:
@@ -14,7 +24,10 @@ programs:
       - CUSTOM_NETCENTER_USERNAME:
       - CUSTOM_NETCENTER_PASSWORD:
       - CUSTOM_NETCENTER_ISG_GROUP:
-
+      - SIP_AUTH_DNS_API_CLIENT_ID:
+      - SIP_AUTH_OIDC_ISSUER:
+      - SIP_AUTH_OIDC_JWKS_URL:
+      - CUSTOM_DNS_ZONES:
 
   - name: dns-api
     path: java

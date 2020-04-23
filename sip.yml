@@ -4,3 +4,32 @@ ingress:
     subdomain: dns
     grpc:
       - port: 50051
+env:
+  - name: SIP_AUTH_DNS_API_CLIENT_ID
+    secret:
+      key: sip-auth-dns-api-client-id
+      create: provided
+  - name: SIP_AUTH_OIDC_ISSUER
+    secret:
+      key: sip-auth-oidc-issuer
+      create: provided
+  - name: SIP_AUTH_OIDC_JWKS_URL
+    secret:
+      key: sip-auth-oidc-jwks-url
+      create: provided
+  - name: CUSTOM_NETCENTER_USERNAME
+    secret:
+      key: sip-auth-oidc-jwks-url
+      create: provided
+  - name: CUSTOM_NETCENTER_PASSWORD
+    secret:
+      key: sip-auth-oidc-jwks-url
+      create: provided
+  - name: CUSTOM_NETCENTER_ISG_GROUP
+    secret:
+      key: sip-auth-oidc-jwks-url
+      create: provided
+  - name: CUSTOM_DNS_ZONES
+    secret:
+      key: sip-auth-oidc-jwks-url
+      create: provided
