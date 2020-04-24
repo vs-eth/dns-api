@@ -323,6 +323,10 @@ public class DnsImpl extends DnsImplBase {
             DnsName result = new DnsName();
             result.domain = domain.get();
             result.name = name.replaceAll("\\." + result.domain + "$", "");
+
+            if (result.name.equals(name)) {
+                result.name = "";
+            }
             return result;
         }
     }
