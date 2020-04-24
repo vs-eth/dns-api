@@ -1,6 +1,8 @@
 package ch.ethz.vis.dnsapi.grpc;
 
 import io.grpc.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jose4j.jwk.HttpsJwks;
 import org.jose4j.jwt.JwtClaims;
 import org.jose4j.jwt.consumer.InvalidJwtException;
@@ -18,6 +20,8 @@ import java.util.List;
  * not thread safe).
  */
 public class AuthServerInterceptor implements ServerInterceptor {
+
+    private static final Logger LOG = LogManager.getLogger(AuthServerInterceptor.class);
 
     private final JwtConsumer jwtConsumer;
 
@@ -54,11 +58,13 @@ public class AuthServerInterceptor implements ServerInterceptor {
         String tokenString = metadata.get(AUTHORIZATION_KEY);
 
         if (tokenString == null || tokenString.isEmpty()) {
+            LOG.debug("Missing authorization header");
             serverCall.close(Status.UNAUTHENTICATED, metadata);
             return new ServerCall.Listener<>(){};
         }
 
         if (!tokenString.matches("Bearer .*")) {
+            LOG.debug("Invalid authorization header");
             serverCall.close(Status.UNAUTHENTICATED, metadata);
             return new ServerCall.Listener<>(){};
         }
@@ -66,6 +72,7 @@ public class AuthServerInterceptor implements ServerInterceptor {
         String jwtToken = tokenString.split(" ", 2)[1];
 
         if (jwtToken == null || jwtToken.isEmpty()) {
+            LOG.debug("missing token");
             serverCall.close(Status.UNAUTHENTICATED, metadata);
             return new ServerCall.Listener<>(){};
         }
@@ -73,12 +80,15 @@ public class AuthServerInterceptor implements ServerInterceptor {
         try {
             JwtClaims jwtClaims = jwtConsumer.processToClaims(jwtToken);
             if (isAuthorized(jwtClaims)) {
+                LOG.debug("Call authorized");
                 return Contexts.interceptCall(Context.current(), serverCall, metadata, serverCallHandler);
             } else {
+                LOG.debug("Call not authorized");
                 serverCall.close(Status.PERMISSION_DENIED, metadata);
                 return new ServerCall.Listener<>(){};
             }
         } catch (InvalidJwtException e) {
+            LOG.warn("", e);
             serverCall.close(Status.UNAUTHENTICATED, metadata);
             return new ServerCall.Listener<>() {};
         }
@@ -94,6 +104,7 @@ public class AuthServerInterceptor implements ServerInterceptor {
                     .anyMatch(s -> s.equals(ROLE_USAGE));
         }
 
+        LOG.debug("No roles found");
         return false;
     }
 }
