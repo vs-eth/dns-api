@@ -89,6 +89,12 @@ public class DnsImpl extends DnsImplBase {
     public void createTxtRecord(Dnsapi.CreateTxtRecordRequest request, StreamObserver<Dnsapi.EmptyResponse> responseObserver) {
         LOG.debug("Got createTxtameRecord request");
         DnsName splittedName = splitOffZone(request.getDomain());
+
+        if (splittedName.isZone()) {
+            LOG.info("Performing netcenter workaround for zone-level records");
+            splittedName.name = "+";
+        }
+
         doRequest(responseObserver,
                 () -> createTxtRecord(
                         splittedName.name,
