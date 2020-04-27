@@ -70,6 +70,7 @@ public class DnsImpl extends DnsImplBase {
         if (splittedName.isZone()) {
             LOG.warn("You cannot create cnames for domains which are a zone");
             responseObserver.onError(new StatusException(Status.INVALID_ARGUMENT));
+            return;
         }
 
         doRequest(responseObserver,
