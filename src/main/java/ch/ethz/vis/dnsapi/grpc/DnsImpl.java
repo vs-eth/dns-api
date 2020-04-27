@@ -43,6 +43,12 @@ public class DnsImpl extends DnsImplBase {
     public void createARecord(Dnsapi.CreateARecordRequest request, StreamObserver<Dnsapi.EmptyResponse> responseObserver) {
         LOG.debug("Got createARecord request");
         DnsName splittedName = splitOffZone(request.getDomain());
+
+        if (splittedName.isZone()) {
+            LOG.info("Performing netcenter workaround for zone-level records");
+            splittedName.name = "+";
+        }
+
         doRequest(responseObserver,
                 () -> createARecord(request.getIp(),
                         splittedName.name,
@@ -60,6 +66,12 @@ public class DnsImpl extends DnsImplBase {
     public void createCNameRecord(Dnsapi.CreateCNameRecordRequest request, StreamObserver<Dnsapi.EmptyResponse> responseObserver) {
         LOG.debug("Got createCNameRecord request");
         DnsName splittedName = splitOffZone(request.getDomain());
+
+        if (splittedName.isZone()) {
+            LOG.warn("You cannot create cnames for domains which are a zone");
+            responseObserver.onError(new StatusException(Status.INVALID_ARGUMENT));
+        }
+
         doRequest(responseObserver,
                 () -> createCNameRecord(request.getHostname(),
                         splittedName.name,
@@ -336,5 +348,9 @@ public class DnsImpl extends DnsImplBase {
         public String name;
 
         public String domain;
+
+        public boolean isZone() {
+            return name.isBlank();
+        }
     }
 }
