@@ -1,9 +1,15 @@
 package ch.ethz.vis.dnsapi.grpc;
 
-import ch.ethz.vis.dnsapi.grpc.DnsGrpc.DnsImplBase;
 import ch.ethz.vis.dnsapi.netcenter.NetcenterAPI;
 import ch.ethz.vis.dnsapi.netcenter.dto.*;
 import ch.ethz.vis.dnsapi.util.SupplierWithExceptions;
+import ch.vseth.sip.dns.CreateARecordRequest;
+import ch.vseth.sip.dns.CreateCNameRecordRequest;
+import ch.vseth.sip.dns.CreateTxtRecordRequest;
+import ch.vseth.sip.dns.*;
+import ch.vseth.sip.dns.SearchTxtRecordRequest;
+import ch.vseth.sip.dns.TxtResponse;
+import ch.vseth.sip.dns.DnsGrpc.DnsImplBase;
 import io.grpc.Status;
 import io.grpc.StatusException;
 import io.grpc.StatusRuntimeException;
@@ -40,7 +46,7 @@ public class DnsImpl extends DnsImplBase {
     }
 
     @Override
-    public void createARecord(Dnsapi.CreateARecordRequest request, StreamObserver<Dnsapi.EmptyResponse> responseObserver) {
+    public void createARecord(CreateARecordRequest request, StreamObserver<EmptyResponse> responseObserver) {
         LOG.debug("Got createARecord request");
         DnsName splittedName = splitOffZone(request.getDomain());
 
@@ -58,12 +64,12 @@ public class DnsImpl extends DnsImplBase {
     }
 
     @Override
-    public void deleteARecord(Dnsapi.DeleteARecordRequest request, StreamObserver<Dnsapi.EmptyResponse> responseObserver) {
+    public void deleteARecord(DeleteARecordRequest request, StreamObserver<EmptyResponse> responseObserver) {
         doRequest(responseObserver, () -> deleteARecord(request.getIp(), request.getHostname()));
     }
 
     @Override
-    public void createCNameRecord(Dnsapi.CreateCNameRecordRequest request, StreamObserver<Dnsapi.EmptyResponse> responseObserver) {
+    public void createCNameRecord(CreateCNameRecordRequest request, StreamObserver<EmptyResponse> responseObserver) {
         LOG.debug("Got createCNameRecord request");
         DnsName splittedName = splitOffZone(request.getDomain());
 
@@ -81,12 +87,12 @@ public class DnsImpl extends DnsImplBase {
     }
 
     @Override
-    public void deleteCNameRecord(Dnsapi.DeleteCNameRecordRequest request, StreamObserver<Dnsapi.EmptyResponse> responseObserver) {
+    public void deleteCNameRecord(DeleteCNameRecordRequest request, StreamObserver<EmptyResponse> responseObserver) {
         doRequest(responseObserver, () -> deleteCNameRecord(request.getAlias()));
     }
 
     @Override
-    public void createTxtRecord(Dnsapi.CreateTxtRecordRequest request, StreamObserver<Dnsapi.EmptyResponse> responseObserver) {
+    public void createTxtRecord(CreateTxtRecordRequest request, StreamObserver<EmptyResponse> responseObserver) {
         LOG.debug("Got createTxtameRecord request");
         DnsName splittedName = splitOffZone(request.getDomain());
 
@@ -104,12 +110,12 @@ public class DnsImpl extends DnsImplBase {
     }
 
     @Override
-    public void searchTxtRecord(Dnsapi.SearchTxtRecordRequest request, StreamObserver<Dnsapi.TxtResponse> responseObserver) {
+    public void searchTxtRecord(SearchTxtRecordRequest request, StreamObserver<TxtResponse> responseObserver) {
         doRequest(responseObserver, () -> searchTxtRecord(request.getFqName()));
     }
 
     @Override
-    public void deleteTxtRecord(Dnsapi.DeleteTxtRecordRequest request, StreamObserver<Dnsapi.EmptyResponse> responseObserver) {
+    public void deleteTxtRecord(DeleteTxtRecordRequest request, StreamObserver<EmptyResponse> responseObserver) {
         doRequest(responseObserver, () -> deleteTxtRecord(request.getFqName(), request.getValue()));
     }
 
@@ -122,14 +128,14 @@ public class DnsImpl extends DnsImplBase {
         }
     }
 
-    private Dnsapi.EmptyResponse createARecord(String ip, String ipName, String subdomain, Dnsapi.RecordOptions options) throws StatusException {
+    private EmptyResponse createARecord(String ip, String ipName, String subdomain, RecordOptions options) throws StatusException {
         LOG.debug("Create A: " + ipName + "." + subdomain + " -> " + ip);
 
         checkParameterPresence(ip, "ip");
         checkParameterPresence(ipName, "ipName");
         checkParameterPresence(subdomain, "subdomain");
 
-        CreateARecordRequest request = CreateARecordRequest.Builder.newBuilder()
+        var request = ch.ethz.vis.dnsapi.netcenter.dto.CreateARecordRequest.Builder.newBuilder()
                 .withIp(ip)
                 .withIpName(ipName)
                 .withSubdomain(subdomain)
@@ -143,21 +149,21 @@ public class DnsImpl extends DnsImplBase {
                 new XmlCreateARecordRequestWrapper(request)).execute());
     }
 
-    private Dnsapi.EmptyResponse deleteARecord(String ip, String fqName) throws StatusException {
+    private EmptyResponse deleteARecord(String ip, String fqName) throws StatusException {
         LOG.debug("Delete A: " + fqName + " -> " + ip);
         checkParameterPresence(ip, "ip");
         checkParameterPresence(fqName, "fqName");
         return checkResponse(() -> netcenterAPI.getARecordManager().DeleteARecord(ip, fqName).execute());
     }
 
-    private Dnsapi.EmptyResponse createCNameRecord(String hostname, String aliasName, String subdomain, Dnsapi.RecordOptions options) throws StatusException {
+    private EmptyResponse createCNameRecord(String hostname, String aliasName, String subdomain, RecordOptions options) throws StatusException {
         LOG.debug("Create CNAME: " + aliasName + "." + subdomain + " -> " + hostname);
 
         checkParameterPresence(hostname, "hostname");
         checkParameterPresence(aliasName, "aliasName");
         checkParameterPresence(subdomain, "subdomain");
 
-        CreateCNameRecordRequest request = CreateCNameRecordRequest.Builder.newBuilder()
+        var request = ch.ethz.vis.dnsapi.netcenter.dto.CreateCNameRecordRequest.Builder.newBuilder()
                 .withHostname(hostname)
                 .withAliasName(aliasName)
                 .withSubdomain(subdomain)
@@ -170,20 +176,20 @@ public class DnsImpl extends DnsImplBase {
                 new XmlCreateCNameRecordRequestWrapper(request)).execute());
     }
 
-    private Dnsapi.EmptyResponse deleteCNameRecord(String alias) throws StatusException {
+    private EmptyResponse deleteCNameRecord(String alias) throws StatusException {
         LOG.debug("Delete CNAME: " + alias);
         checkParameterPresence(alias, "alias");
         return checkResponse(() -> netcenterAPI.getCNameRecordManager().DeleteCNameRecord(alias).execute());
     }
 
-    private Dnsapi.EmptyResponse createTxtRecord(String txtName, String subdomain, String value, Dnsapi.RecordOptions options) throws StatusException {
+    private EmptyResponse createTxtRecord(String txtName, String subdomain, String value, RecordOptions options) throws StatusException {
         LOG.debug("Create TXT: " + txtName + "." + subdomain + " -> " + value);
 
         checkParameterPresence(txtName, "txtName");
         checkParameterPresence(subdomain, "subdomain");
         checkParameterPresence(value, "value");
 
-        CreateTxtRecordRequest request = CreateTxtRecordRequest.Builder.newBuilder()
+        var request = ch.ethz.vis.dnsapi.netcenter.dto.CreateTxtRecordRequest.Builder.newBuilder()
                 .withTxtName(txtName)
                 .withSubdomain(subdomain)
                 .withValue(value)
@@ -194,28 +200,29 @@ public class DnsImpl extends DnsImplBase {
 
         checkTxtJsonResponse(() -> netcenterAPI.getTxtRecordManager().CreateTxtRecord(request).execute());
 
-        return Dnsapi.EmptyResponse.getDefaultInstance();
+        return EmptyResponse.getDefaultInstance();
     }
 
-    private Dnsapi.TxtResponse searchTxtRecord(String fqName) throws StatusException {
+    private TxtResponse searchTxtRecord(String fqName) throws StatusException {
         LOG.debug("Search TXT: " + fqName);
 
         checkNonEmptyString(fqName, "fqName");
 
-        SearchTxtRecordRequest request = SearchTxtRecordRequest.Builder.newBuilder()
+        ch.ethz.vis.dnsapi.netcenter.dto.SearchTxtRecordRequest request =
+                ch.ethz.vis.dnsapi.netcenter.dto.SearchTxtRecordRequest.Builder.newBuilder()
                 .withFqName(fqName).build();
 
-        TxtRecord record = checkTxtJsonResponse(() -> netcenterAPI.getTxtRecordManager().SearchTxtRecord(request).execute());
+        ch.ethz.vis.dnsapi.netcenter.dto.TxtRecord record = checkTxtJsonResponse(() -> netcenterAPI.getTxtRecordManager().SearchTxtRecord(request).execute());
 
         if (record.getId() == null || record.getFqName() == null) {
             LOG.debug("TXT record not found");
             throw new StatusException(Status.NOT_FOUND.withDescription("TXT record not found"));
         }
 
-        return Dnsapi.TxtResponse.newBuilder()
+        return TxtResponse.newBuilder()
                 .setFqName(record.getFqName())
                 .setValue(record.getValue())
-                .setOptions(Dnsapi.RecordOptions.newBuilder()
+                .setOptions(RecordOptions.newBuilder()
                         .setTtl(record.getTtl())
                         .setIsgGroup(record.getIsgGroup())
                         .setExternallyViewable(record.getViews().contains("extern"))
@@ -223,13 +230,14 @@ public class DnsImpl extends DnsImplBase {
                 .build();
     }
 
-    private Dnsapi.EmptyResponse deleteTxtRecord(String fqName, String value) throws StatusException {
+    private EmptyResponse deleteTxtRecord(String fqName, String value) throws StatusException {
         LOG.debug("Delete TXT: " + fqName + " -> " + value);
 
         checkParameterPresence(fqName, "fqName");
         checkParameterPresence(value, "value");
 
-        SearchTxtRecordRequest request = SearchTxtRecordRequest.Builder.newBuilder()
+        ch.ethz.vis.dnsapi.netcenter.dto.SearchTxtRecordRequest request =
+                ch.ethz.vis.dnsapi.netcenter.dto.SearchTxtRecordRequest.Builder.newBuilder()
                 .withFqName(fqName)
                 .withValue(value)
                 .build();
@@ -261,7 +269,7 @@ public class DnsImpl extends DnsImplBase {
             throw new StatusException(Status.INTERNAL.withDescription("Error relaying request to API"));
         }
 
-        return Dnsapi.EmptyResponse.getDefaultInstance();
+        return EmptyResponse.getDefaultInstance();
     }
 
     private void checkParameterPresence(Object param, String paramName) throws StatusException {
@@ -280,7 +288,7 @@ public class DnsImpl extends DnsImplBase {
         }
     }
 
-    private <T> Dnsapi.EmptyResponse checkResponse(SupplierWithExceptions<Response<T>, IOException> request) throws StatusException {
+    private <T> EmptyResponse checkResponse(SupplierWithExceptions<Response<T>, IOException> request) throws StatusException {
         try {
             Response<T> response = request.accept();
             return checkResponse(response);
@@ -290,7 +298,7 @@ public class DnsImpl extends DnsImplBase {
         }
     }
 
-    private <T> Dnsapi.EmptyResponse checkResponse(Response<T> response) throws StatusException, IOException {
+    private <T> EmptyResponse checkResponse(Response<T> response) throws StatusException, IOException {
         if (!response.isSuccessful()) {
             ResponseBody errorBody = response.errorBody();
             if (errorBody != null) {
@@ -303,14 +311,14 @@ public class DnsImpl extends DnsImplBase {
         }
 
 
-        return Dnsapi.EmptyResponse.getDefaultInstance();
+        return EmptyResponse.getDefaultInstance();
     }
 
-    private TxtRecord checkTxtJsonResponse(SupplierWithExceptions<Response<TxtResponse>, IOException> responseSupplier) throws StatusException {
+    private TxtRecord checkTxtJsonResponse(SupplierWithExceptions<Response<ch.ethz.vis.dnsapi.netcenter.dto.TxtResponse>, IOException> responseSupplier) throws StatusException {
         try {
-            Response<TxtResponse> response = responseSupplier.accept();
+            Response<ch.ethz.vis.dnsapi.netcenter.dto.TxtResponse> response = responseSupplier.accept();
             checkResponse(response);
-            TxtResponse body = response.body();
+            var body = response.body();
 
             if (body == null) {
                 LOG.error("Got empty body from TXT api");

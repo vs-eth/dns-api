@@ -2,6 +2,9 @@ package ch.ethz.vis.dnsapi.grpc;
 
 import ch.ethz.vis.dnsapi.netcenter.dto.CreateARecordRequest;
 import ch.ethz.vis.dnsapi.netcenter.dto.XmlCreateARecordRequestWrapper;
+import ch.vseth.sip.dns.DeleteARecordRequest;
+import ch.vseth.sip.dns.EmptyResponse;
+import ch.vseth.sip.dns.RecordOptions;
 import io.grpc.StatusRuntimeException;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.RecordedRequest;
@@ -17,9 +20,9 @@ public class ARecordImplTest extends DnsImplBase {
     public void successfullyCreateARecordWithDefaultIsg() throws InterruptedException {
         mockWebServer.enqueue(new MockResponse().setResponseCode(200).setBody("<success>Done!</success>"));
 
-        Dnsapi.CreateARecordRequest request = defaultCreateARecordRequest().build();
+        var request = defaultCreateARecordRequest().build();
 
-        Dnsapi.EmptyResponse response = stub.createARecord(request);
+        EmptyResponse response = stub.createARecord(request);
         org.junit.Assert.assertNotNull(response);
 
         RecordedRequest rr = mockWebServer.takeRequest();
@@ -37,11 +40,11 @@ public class ARecordImplTest extends DnsImplBase {
     public void successfullyCreateARecordWithCustomIsg() throws InterruptedException {
         mockWebServer.enqueue(new MockResponse().setResponseCode(200).setBody("<success>Done!</success>"));
 
-        Dnsapi.CreateARecordRequest request = defaultCreateARecordRequest()
-                .setOptions(Dnsapi.RecordOptions.newBuilder().setIsgGroup(CUSTOM_ISG).build())
+        var request = defaultCreateARecordRequest()
+                .setOptions(RecordOptions.newBuilder().setIsgGroup(CUSTOM_ISG).build())
                 .build();
 
-        Dnsapi.EmptyResponse response = stub.createARecord(request);
+        EmptyResponse response = stub.createARecord(request);
         org.junit.Assert.assertNotNull(response);
 
         RecordedRequest rr = mockWebServer.takeRequest();
@@ -59,18 +62,18 @@ public class ARecordImplTest extends DnsImplBase {
     public void tryCreateARecordWithErrorFromBackend() {
         mockWebServer.enqueue(new MockResponse().setResponseCode(200).setBody("<errors><error>Done!</error></errors>"));
 
-        Dnsapi.CreateARecordRequest request = defaultCreateARecordRequest().build();
+        ch.vseth.sip.dns.CreateARecordRequest request = defaultCreateARecordRequest().build();
 
-        Dnsapi.EmptyResponse response = stub.createARecord(request);
+        EmptyResponse response = stub.createARecord(request);
     }
 
     @org.junit.Test
     public void successfullyDeleteARecord() throws InterruptedException {
         mockWebServer.enqueue(new MockResponse().setResponseCode(200).setBody("<success>Done!</success>"));
 
-        Dnsapi.DeleteARecordRequest request = defaultDeleteARecordRequest().build();
+        DeleteARecordRequest request = defaultDeleteARecordRequest().build();
 
-        Dnsapi.EmptyResponse response = stub.deleteARecord(request);
+        EmptyResponse response = stub.deleteARecord(request);
         org.junit.Assert.assertNotNull(response);
 
         RecordedRequest rr = mockWebServer.takeRequest();
@@ -81,19 +84,19 @@ public class ARecordImplTest extends DnsImplBase {
     public void tryDeleteARecordWithErrorFromBackend() {
         mockWebServer.enqueue(new MockResponse().setResponseCode(200).setBody("<errors><error>Error!</error></errors>"));
 
-        Dnsapi.DeleteARecordRequest request = defaultDeleteARecordRequest().build();
+        DeleteARecordRequest request = defaultDeleteARecordRequest().build();
 
-        Dnsapi.EmptyResponse response = stub.deleteARecord(request);
+        EmptyResponse response = stub.deleteARecord(request);
     }
 
-    private Dnsapi.CreateARecordRequest.Builder defaultCreateARecordRequest() {
-        return Dnsapi.CreateARecordRequest.newBuilder()
+    private ch.vseth.sip.dns.CreateARecordRequest.Builder defaultCreateARecordRequest() {
+        return ch.vseth.sip.dns.CreateARecordRequest.newBuilder()
                 .setIp(IP)
                 .setDomain(IP_NAME + "." + DEFAULT_SUBDOMAIN);
     }
 
-    private Dnsapi.DeleteARecordRequest.Builder defaultDeleteARecordRequest() {
-        return Dnsapi.DeleteARecordRequest.newBuilder()
+    private DeleteARecordRequest.Builder defaultDeleteARecordRequest() {
+        return DeleteARecordRequest.newBuilder()
                 .setHostname(IP_NAME + "." + DEFAULT_SUBDOMAIN)
                 .setIp(IP);
     }

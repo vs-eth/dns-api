@@ -1,6 +1,7 @@
 package ch.ethz.vis.dnsapi.grpc;
 
 import ch.ethz.vis.dnsapi.netcenter.NetcenterAPI;
+import ch.vseth.sip.dns.DnsGrpc;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.testing.GrpcCleanupRule;

@@ -2,6 +2,9 @@ package ch.ethz.vis.dnsapi.grpc;
 
 import ch.ethz.vis.dnsapi.netcenter.dto.CreateCNameRecordRequest;
 import ch.ethz.vis.dnsapi.netcenter.dto.XmlCreateCNameRecordRequestWrapper;
+import ch.vseth.sip.dns.DeleteCNameRecordRequest;
+import ch.vseth.sip.dns.EmptyResponse;
+import ch.vseth.sip.dns.RecordOptions;
 import io.grpc.StatusRuntimeException;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.RecordedRequest;
@@ -16,9 +19,9 @@ public class CNameRecordImplTest extends DnsImplBase {
     public void successfullyCreateARecordWithDefaultIsg() throws InterruptedException {
         mockWebServer.enqueue(new MockResponse().setResponseCode(200).setBody("<success>Done!</success>"));
 
-        Dnsapi.CreateCNameRecordRequest request = defaultCreateCNameRecordRequest().build();
+        var request = defaultCreateCNameRecordRequest().build();
 
-        Dnsapi.EmptyResponse response = stub.createCNameRecord(request);
+        EmptyResponse response = stub.createCNameRecord(request);
         org.junit.Assert.assertNotNull(response);
 
         RecordedRequest rr = mockWebServer.takeRequest();
@@ -36,11 +39,11 @@ public class CNameRecordImplTest extends DnsImplBase {
     public void successfullyCreateARecordWithCustomIsg() throws InterruptedException {
         mockWebServer.enqueue(new MockResponse().setResponseCode(200).setBody("<success>Done!</success>"));
 
-        Dnsapi.CreateCNameRecordRequest request = defaultCreateCNameRecordRequest()
-                .setOptions(Dnsapi.RecordOptions.newBuilder().setIsgGroup(CUSTOM_ISG).build())
+        var request = defaultCreateCNameRecordRequest()
+                .setOptions(RecordOptions.newBuilder().setIsgGroup(CUSTOM_ISG).build())
                 .build();
 
-        Dnsapi.EmptyResponse response = stub.createCNameRecord(request);
+        EmptyResponse response = stub.createCNameRecord(request);
         org.junit.Assert.assertNotNull(response);
 
         RecordedRequest rr = mockWebServer.takeRequest();
@@ -58,18 +61,18 @@ public class CNameRecordImplTest extends DnsImplBase {
     public void tryCreateARecordWithErrorFromBackend() {
         mockWebServer.enqueue(new MockResponse().setResponseCode(200).setBody("<errors><error>Done!</error></errors>"));
 
-        Dnsapi.CreateCNameRecordRequest request = defaultCreateCNameRecordRequest().build();
+        ch.vseth.sip.dns.CreateCNameRecordRequest request = defaultCreateCNameRecordRequest().build();
 
-        Dnsapi.EmptyResponse response = stub.createCNameRecord(request);
+        EmptyResponse response = stub.createCNameRecord(request);
     }
 
     @org.junit.Test
     public void successfullyDeleteARecord() throws InterruptedException {
         mockWebServer.enqueue(new MockResponse().setResponseCode(200).setBody("<success>Done!</success>"));
 
-        Dnsapi.DeleteCNameRecordRequest request = defaultDeleteCNameRecordRequest().build();
+        DeleteCNameRecordRequest request = defaultDeleteCNameRecordRequest().build();
 
-        Dnsapi.EmptyResponse response = stub.deleteCNameRecord(request);
+        EmptyResponse response = stub.deleteCNameRecord(request);
         org.junit.Assert.assertNotNull(response);
 
         RecordedRequest rr = mockWebServer.takeRequest();
@@ -80,19 +83,19 @@ public class CNameRecordImplTest extends DnsImplBase {
     public void tryDeleteARecordWithErrorFromBackend() {
         mockWebServer.enqueue(new MockResponse().setResponseCode(200).setBody("<errors><error>Error!</error></errors>"));
 
-        Dnsapi.DeleteCNameRecordRequest request = defaultDeleteCNameRecordRequest().build();
+        DeleteCNameRecordRequest request = defaultDeleteCNameRecordRequest().build();
 
-        Dnsapi.EmptyResponse response = stub.deleteCNameRecord(request);
+        EmptyResponse response = stub.deleteCNameRecord(request);
     }
 
-    private Dnsapi.CreateCNameRecordRequest.Builder defaultCreateCNameRecordRequest() {
-        return Dnsapi.CreateCNameRecordRequest.newBuilder()
+    private ch.vseth.sip.dns.CreateCNameRecordRequest.Builder defaultCreateCNameRecordRequest() {
+        return ch.vseth.sip.dns.CreateCNameRecordRequest.newBuilder()
                 .setHostname(HOST_NAME)
                 .setDomain(ALIAS_NAME + "." + DEFAULT_SUBDOMAIN);
     }
 
-    private Dnsapi.DeleteCNameRecordRequest.Builder defaultDeleteCNameRecordRequest() {
-        return Dnsapi.DeleteCNameRecordRequest.newBuilder()
+    private DeleteCNameRecordRequest.Builder defaultDeleteCNameRecordRequest() {
+        return DeleteCNameRecordRequest.newBuilder()
                 .setAlias(ALIAS_NAME + "." + DEFAULT_SUBDOMAIN);
     }
 

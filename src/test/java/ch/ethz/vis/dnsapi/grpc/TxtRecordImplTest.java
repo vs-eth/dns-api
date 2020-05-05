@@ -4,6 +4,10 @@ import ch.ethz.vis.dnsapi.netcenter.dto.CreateTxtRecordRequest;
 import ch.ethz.vis.dnsapi.netcenter.dto.JsonResponse;
 import ch.ethz.vis.dnsapi.netcenter.dto.SearchTxtRecordRequest;
 import ch.ethz.vis.dnsapi.netcenter.dto.TxtRecord;
+import ch.vseth.sip.dns.DeleteTxtRecordRequest;
+import ch.vseth.sip.dns.EmptyResponse;
+import ch.vseth.sip.dns.RecordOptions;
+import ch.vseth.sip.dns.TxtResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.grpc.StatusRuntimeException;
 import okhttp3.mockwebserver.MockResponse;
@@ -23,9 +27,9 @@ public class TxtRecordImplTest extends DnsImplBase {
     public void successfullyCreateTxtRecordWithDefaultIsg() throws InterruptedException, IOException {
         mockWebServer.enqueue(new MockResponse().setResponseCode(200).setBody("{\"id\":\"" + ID + "\",\"fqName\":\"" + TXT_NAME + "." + DEFAULT_SUBDOMAIN + "\",\"value\":\"" + VALUE + "\"}"));
 
-        Dnsapi.CreateTxtRecordRequest request = defaultCreateTxtRecordRequest().build();
+        var request = defaultCreateTxtRecordRequest().build();
 
-        Dnsapi.EmptyResponse response = stub.createTxtRecord(request);
+        EmptyResponse response = stub.createTxtRecord(request);
         org.junit.Assert.assertNotNull(response);
 
         RecordedRequest rr = mockWebServer.takeRequest();
@@ -40,11 +44,11 @@ public class TxtRecordImplTest extends DnsImplBase {
     public void successfullyCreateTxtRecordWithCustomIsg() throws InterruptedException, IOException {
         mockWebServer.enqueue(new MockResponse().setResponseCode(200).setBody("{\"id\":\"" + ID + "\",\"fqName\":\"" + TXT_NAME + "." + DEFAULT_SUBDOMAIN + "\",\"value\":\"" + VALUE + "\"}"));
 
-        Dnsapi.CreateTxtRecordRequest request = defaultCreateTxtRecordRequest()
-                .setOptions(Dnsapi.RecordOptions.newBuilder().setIsgGroup(CUSTOM_ISG).build())
+        var request = defaultCreateTxtRecordRequest()
+                .setOptions(RecordOptions.newBuilder().setIsgGroup(CUSTOM_ISG).build())
                 .build();
 
-        Dnsapi.EmptyResponse response = stub.createTxtRecord(request);
+        EmptyResponse response = stub.createTxtRecord(request);
         org.junit.Assert.assertNotNull(response);
 
         RecordedRequest rr = mockWebServer.takeRequest();
@@ -59,9 +63,9 @@ public class TxtRecordImplTest extends DnsImplBase {
     public void tryCreateTxtRecordWithErrorFromBackend() {
         mockWebServer.enqueue(new MockResponse().setResponseCode(200).setBody("{\"errors\": [{\"rowId\":\"undef\",\"field\":\"name\",\"errMsg\":\"Some error happened\"}]}"));
 
-        Dnsapi.CreateTxtRecordRequest request = defaultCreateTxtRecordRequest().build();
+        var request = defaultCreateTxtRecordRequest().build();
 
-        Dnsapi.EmptyResponse response = stub.createTxtRecord(request);
+        EmptyResponse response = stub.createTxtRecord(request);
     }
 
     @org.junit.Test
@@ -79,11 +83,11 @@ public class TxtRecordImplTest extends DnsImplBase {
 
         mockWebServer.enqueue(new MockResponse().setResponseCode(200).setBody(mockResponseBody.toString()));
 
-        Dnsapi.SearchTxtRecordRequest request = Dnsapi.SearchTxtRecordRequest.newBuilder()
+        var request = ch.vseth.sip.dns.SearchTxtRecordRequest.newBuilder()
                 .setFqName(record.getFqName())
                 .build();
 
-        Dnsapi.TxtResponse response = stub.searchTxtRecord(request);
+        TxtResponse response = stub.searchTxtRecord(request);
         org.junit.Assert.assertNotNull(response);
         org.junit.Assert.assertEquals(TXT_NAME + "." + DEFAULT_SUBDOMAIN, response.getFqName());
         org.junit.Assert.assertEquals(VALUE, response.getValue());
@@ -108,11 +112,11 @@ public class TxtRecordImplTest extends DnsImplBase {
 
         mockWebServer.enqueue(new MockResponse().setResponseCode(200).setBody(mockResponseBody.toString()));
 
-        Dnsapi.SearchTxtRecordRequest request = Dnsapi.SearchTxtRecordRequest.newBuilder()
+        var request = ch.vseth.sip.dns.SearchTxtRecordRequest.newBuilder()
                 .setFqName(TXT_NAME + "." + DEFAULT_SUBDOMAIN)
                 .build();
 
-        Dnsapi.TxtResponse response = stub.searchTxtRecord(request);
+        TxtResponse response = stub.searchTxtRecord(request);
     }
 
     @org.junit.Test
@@ -120,9 +124,9 @@ public class TxtRecordImplTest extends DnsImplBase {
         mockWebServer.enqueue(new MockResponse().setResponseCode(200).setBody("{\"id\":\"" + ID + "\",\"fqName\":\"" + TXT_NAME + "." + DEFAULT_SUBDOMAIN + "\",\"value\":\"" + VALUE + "\",\"netsupName\":\"" + DEFAULT_ISG + "\"}"));
         mockWebServer.enqueue(new MockResponse().setResponseCode(200).setBody("{\"status\":\"deleted\"}"));
 
-        Dnsapi.DeleteTxtRecordRequest request = defaultDeleteTxtRecordRequest().build();
+        DeleteTxtRecordRequest request = defaultDeleteTxtRecordRequest().build();
 
-        Dnsapi.EmptyResponse response = stub.deleteTxtRecord(request);
+        EmptyResponse response = stub.deleteTxtRecord(request);
         org.junit.Assert.assertNotNull(response);
 
         RecordedRequest findIdRequest = mockWebServer.takeRequest();
@@ -141,9 +145,9 @@ public class TxtRecordImplTest extends DnsImplBase {
         mockWebServer.enqueue(new MockResponse().setResponseCode(200).setBody("{\"id\":\"" + ID + "\",\"fqName\":\"" + TXT_NAME + "." + DEFAULT_SUBDOMAIN + "\",\"value\":\"" + VALUE + "\",\"netsupName\":\"" + DEFAULT_ISG + "\"}"));
         mockWebServer.enqueue(new MockResponse().setResponseCode(200).setBody("{\"errors\": [{\"rowId\":\"undef\",\"field\":\"name\",\"errMsg\":\"Some error happened\"}]}"));
 
-        Dnsapi.DeleteTxtRecordRequest request = defaultDeleteTxtRecordRequest().build();
+        DeleteTxtRecordRequest request = defaultDeleteTxtRecordRequest().build();
 
-        Dnsapi.EmptyResponse response = stub.deleteTxtRecord(request);
+        EmptyResponse response = stub.deleteTxtRecord(request);
         org.junit.Assert.assertNotNull(response);
 
         RecordedRequest findIdRequest = mockWebServer.takeRequest();
@@ -161,9 +165,9 @@ public class TxtRecordImplTest extends DnsImplBase {
     public void tryDeleteTxtRecordWithErrorInFirstRequest() throws InterruptedException, IOException {
         mockWebServer.enqueue(new MockResponse().setResponseCode(200).setBody("{\"errors\": [{\"rowId\":\"undef\",\"field\":\"name\",\"errMsg\":\"Some error happened\"}]}"));
 
-        Dnsapi.DeleteTxtRecordRequest request = defaultDeleteTxtRecordRequest().build();
+        DeleteTxtRecordRequest request = defaultDeleteTxtRecordRequest().build();
 
-        Dnsapi.EmptyResponse response = stub.deleteTxtRecord(request);
+        EmptyResponse response = stub.deleteTxtRecord(request);
         org.junit.Assert.assertNotNull(response);
 
         RecordedRequest findIdRequest = mockWebServer.takeRequest();
@@ -181,9 +185,9 @@ public class TxtRecordImplTest extends DnsImplBase {
     public void tryDeleteAbsentTxtRecordWithWildcardPresent() throws InterruptedException, IOException {
         mockWebServer.enqueue(new MockResponse().setResponseCode(200).setBody("{\"id\":\"" + ID + "\",\"fqName\":\"" + "*." + DEFAULT_SUBDOMAIN + "\",\"value\":\"" + VALUE + "\",\"netsupName\":\"" + DEFAULT_ISG + "\"}"));
 
-        Dnsapi.DeleteTxtRecordRequest request = defaultDeleteTxtRecordRequest().build();
+        DeleteTxtRecordRequest request = defaultDeleteTxtRecordRequest().build();
 
-        Dnsapi.EmptyResponse response = stub.deleteTxtRecord(request);
+        EmptyResponse response = stub.deleteTxtRecord(request);
         org.junit.Assert.assertNotNull(response);
 
         RecordedRequest findIdRequest = mockWebServer.takeRequest();
@@ -197,14 +201,14 @@ public class TxtRecordImplTest extends DnsImplBase {
         JsonResponse deletionResponse = mapper.readValue(deletionRequest.getBody().inputStream(), JsonResponse.class);
     }
 
-    private Dnsapi.CreateTxtRecordRequest.Builder defaultCreateTxtRecordRequest() {
-        return Dnsapi.CreateTxtRecordRequest.newBuilder()
+    private ch.vseth.sip.dns.CreateTxtRecordRequest.Builder defaultCreateTxtRecordRequest() {
+        return ch.vseth.sip.dns.CreateTxtRecordRequest.newBuilder()
                 .setValue(VALUE)
                 .setDomain(TXT_NAME + "." + DEFAULT_SUBDOMAIN);
     }
 
-    private Dnsapi.DeleteTxtRecordRequest.Builder defaultDeleteTxtRecordRequest() {
-        return Dnsapi.DeleteTxtRecordRequest.newBuilder()
+    private DeleteTxtRecordRequest.Builder defaultDeleteTxtRecordRequest() {
+        return DeleteTxtRecordRequest.newBuilder()
                 .setValue(VALUE)
                 .setFqName(TXT_NAME + "." + DEFAULT_SUBDOMAIN);
     }

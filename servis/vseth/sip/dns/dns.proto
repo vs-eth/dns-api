@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+package vseth.sip.dns;
+
+option go_package = "servis/vseth/sip/dns";
+option java_multiple_files = true;
+option java_package = "ch.vseth.sip.dns";
+
+message RecordOptions {
+  uint32 ttl = 1; // optional, default 600s
+  string isg_group = 2; // optional, default configured in dnsapi.properties
+  bool externally_viewable = 3; // optional, default false
+}
+
+message CreateARecordRequest {
+  string ip = 1; // required
+  string domain = 2; // required
+  RecordOptions options = 10; // optional
+}
+
+message DeleteARecordRequest {
+  string ip = 1; // required
+  string hostname = 2; // required
+}
+
+message CreateCNameRecordRequest {
+  string hostname = 1; // required
+  string domain = 2; // required
+  RecordOptions options = 10; // optional
+}
+
+message DeleteCNameRecordRequest {
+  string alias = 1; // required
+}
+
+message CreateTxtRecordRequest {
+  string value = 1; // required
+  string domain = 2; // required
+  RecordOptions options = 10; // optional
+}
+
+message SearchTxtRecordRequest {
+  string fq_name = 1; // required
+}
+
+message DeleteTxtRecordRequest {
+  string value = 1; // required
+  string fq_name = 2; // required
+}
+
+message EmptyResponse {}
+
+message TxtResponse {
+  string value = 1; // always set
+  string fq_name = 2; // always set
+  RecordOptions options = 3; // always set, isgGroup is not returned
+}
+
+service Dns {
+  // CreateARecord CreateARecord
+  rpc CreateARecord(CreateARecordRequest) returns (EmptyResponse);
+  // DeleteARecord DeleteARecord
+  rpc DeleteARecord(DeleteARecordRequest) returns (EmptyResponse);
+  // CreateCNameRecord CreateCNameRecord
+  rpc CreateCNameRecord(CreateCNameRecordRequest) returns (EmptyResponse);
+  // DeleteCNameRecord DeleteCNameRecord
+  rpc DeleteCNameRecord(DeleteCNameRecordRequest) returns (EmptyResponse);
+  // CreateTxtRecord CreateTxtRecord
+  rpc CreateTxtRecord(CreateTxtRecordRequest) returns (EmptyResponse);
+  // SearchTxtRecord SearchTxtRecord
+  // Does not return information about the ISG group the record belongs to, because why not.
+  rpc SearchTxtRecord(SearchTxtRecordRequest) returns (TxtResponse);
+  // DeleteTxtRecord DeleteTxtRecord
+  rpc DeleteTxtRecord(DeleteTxtRecordRequest) returns (EmptyResponse);
+}
