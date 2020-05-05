@@ -3,6 +3,7 @@ FROM eu.gcr.io/vseth-public/base:delta
 RUN apt install -y --no-install-recommends default-jdk maven
 
 COPY src src
+COPY servis servis
 COPY pom.xml pom.xml
 
 RUN mvn package
