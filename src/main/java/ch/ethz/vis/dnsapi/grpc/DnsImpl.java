@@ -74,7 +74,8 @@ public class DnsImpl extends DnsImplBase {
         DnsName splittedName = splitOffZone(request.getDomain());
 
         if (splittedName.isZone()) {
-            LOG.warn("You cannot create cnames for domains which are a zone");
+            LOG.warn("You cannot create cnames for domains which are a zone. Request was for {}.{} -> {}",
+                    splittedName.name, splittedName.domain, request.getHostname());
             responseObserver.onError(new StatusException(Status.INVALID_ARGUMENT));
             return;
         }

@@ -120,6 +120,7 @@ public class Config {
         LOG.debug("Client ID: " + clientId);
         LOG.debug("Issuer: " + issuer);
         LOG.debug("JWKS URL: " + jwksUrl);
+        LOG.debug("Known zones: " + Arrays.toString(dnsZones.toArray()));
     }
 
     public AuthConfigStrategy getAuthConfig() {

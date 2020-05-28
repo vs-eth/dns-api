@@ -5,6 +5,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jose4j.jwk.HttpsJwks;
 import org.jose4j.jwt.JwtClaims;
+import org.jose4j.jwt.MalformedClaimException;
 import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.jose4j.jwt.consumer.JwtConsumer;
 import org.jose4j.jwt.consumer.JwtConsumerBuilder;
@@ -80,14 +81,14 @@ public class AuthServerInterceptor implements ServerInterceptor {
         try {
             JwtClaims jwtClaims = jwtConsumer.processToClaims(jwtToken);
             if (isAuthorized(jwtClaims)) {
-                LOG.debug("Call authorized");
+                LOG.debug("Call authorized for client " + jwtClaims.getSubject());
                 return Contexts.interceptCall(Context.current(), serverCall, metadata, serverCallHandler);
             } else {
                 LOG.debug("Call not authorized");
                 serverCall.close(Status.PERMISSION_DENIED, metadata);
                 return new ServerCall.Listener<>(){};
             }
-        } catch (InvalidJwtException e) {
+        } catch (InvalidJwtException | MalformedClaimException e) {
             LOG.warn("", e);
             serverCall.close(Status.UNAUTHENTICATED, metadata);
             return new ServerCall.Listener<>() {};
